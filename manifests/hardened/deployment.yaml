@@ -1,13 +1,3 @@
-# ✅ HARDENED КОНФИГУРАЦИЯ
-#
-# Исправления по сравнению с vulnerable/:
-#   ✅ image:v15.0.0        — фиксированный тег
-#   ✅ runAsUser: 1000       — непривилегированный пользователь
-#   ✅ privileged: false     — нет доступа к хосту
-#   ✅ allowPrivilegeEscalation: false
-#   ✅ capabilities.drop: [ALL] — минимальные привилегии ядра
-#   ✅ resources.limits      — защита от DoS
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,8 +15,6 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
-        fsGroup: 1000
       containers:
         - name: juiceshop
           image: bkimminich/juice-shop:v15.0.0
@@ -45,10 +33,9 @@ spec:
                   key: jwt-secret
           securityContext:
             runAsNonRoot: true
-            runAsUser: 1000
             privileged: false
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false  # Juice Shop пишет временные файлы
+            readOnlyRootFilesystem: false  # juice-shop требует запись
             capabilities:
               drop:
                 - ALL

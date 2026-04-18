@@ -1,0 +1,98 @@
+stages:
+  - sast
+  - secrets
+  - scan-image
+  - scan-manifests
+  - deploy
+
+variables:
+  KUBESEC_IMAGE: "kubesec/kubesec:v2"
+  JUICE_SHOP_IMAGE: "bkimminich/juice-shop:latest"
+
+semgrep:
+  stage: sast
+  image: python:3.11
+  before_script:
+    - pip install semgrep --quiet
+  script:
+    - semgrep scan --config=auto --error manifests/
+  tags:
+    - git-runner
+  allow_failure: false
+
+gitleaks:
+  stage: secrets
+  image: ubuntu:22.04
+  before_script:
+    - apt-get update -qq && apt-get install -y wget tar git -qq
+    - wget -q https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz -O /tmp/gitleaks.tar.gz
+    - tar -xzf /tmp/gitleaks.tar.gz -C /tmp && mv /tmp/gitleaks /usr/local/bin/
+  script:
+    - gitleaks detect --source=./manifests --no-git --verbose
+  tags:
+    - git-runner
+  allow_failure: false
+
+trivy: 
+  stage: scan-image
+  when: manual
+  image: ubuntu:22.04
+  variables:
+    TRIVY_NO_PROGRESS: "true"
+  before_script:
+    - apt-get update -qq && apt-get install -y wget -qq
+    - wget -q https://github.com/aquasecurity/trivy/releases/download/v0.50.1/trivy_0.50.1_Linux-64bit.tar.gz -O /tmp/trivy.tar.gz
+    - tar -xzf /tmp/trivy.tar.gz -C /tmp && mv /tmp/trivy /usr/local/bin/
+  script:
+    - trivy image --severity HIGH,CRITICAL --format table $JUICE_SHOP_IMAGE
+  tags:
+    - git-runner
+  allow_failure: true
+
+kubesec:
+  stage: scan-manifests
+  image: python:3.11
+  before_script:
+    - apt-get update -qq && apt-get install -y wget tar -qq
+    - wget -q https://github.com/controlplaneio/kubesec/releases/download/v2.13.0/kubesec_linux_amd64.tar.gz -O /tmp/kubesec.tar.gz
+    - tar -xzf /tmp/kubesec.tar.gz -C /tmp && mv /tmp/kubesec /usr/local/bin/
+  script:
+    - kubesec scan manifests/deployment.yaml
+    - |
+      SCORE=$(kubesec scan manifests/deployment.yaml | python3 -c "import json,sys; print(json.load(sys.stdin)[0]['score'])")
+      echo "Kubesec score: $SCORE"
+      if [ "$SCORE" -lt "0" ]; then
+        echo " Score отрицательный — небезопасная конфигурация!"
+      fi
+  tags:
+    - git-runner
+  allow_failure: false
+
+checkov:
+  stage: scan-manifests
+  when: manual
+  image: python:3.11
+  before_script:
+    - pip install checkov --quiet
+  script:
+    - checkov -d manifests/ --framework kubernetes --quiet 2>/dev/null
+  tags:
+    - git-runner
+  allow_failure: true
+
+deploy:
+  stage: deploy
+  image: ubuntu:22.04
+  before_script:
+    - apt-get update -qq && apt-get install -y curl -qq
+    - curl -LO "https://dl.k8s.io/release/v1.29.0/bin/linux/amd64/kubectl"
+    - chmod +x kubectl && mv kubectl /usr/local/bin/
+    - mkdir -p ~/.kube
+    - echo "$KUBECONFIG_DATA" | base64 -d > ~/.kube/config
+  script:
+    - kubectl apply -f manifests/
+    - kubectl get pods
+  tags:
+    - git-runner
+  only:
+    - main
