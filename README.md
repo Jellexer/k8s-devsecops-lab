@@ -54,7 +54,128 @@
 | CI/CD | GitLab CI |
 
 ---
+---
 
+## Манифесты 
+### Deployment — описывает приложение
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: juiceshop          # имя деплоймента
+spec:
+  replicas: 1              # сколько копий пода запустить
+  selector:
+    matchLabels:
+      app: juiceshop       # связывает deployment с подами
+  template:
+    spec:
+      containers:
+        - name: juiceshop
+          image: bkimminich/juice-shop:v15.0.0  # образ и версия
+          ports:
+            - containerPort: 3000
+```
+
+### Service — стабильный адрес для пода
+
+Поды пересоздаются и меняют IP. Service даёт постоянный адрес:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: juiceshop
+spec:
+  selector:
+    app: juiceshop          # находит поды по метке
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: ClusterIP           # доступен только внутри кластера
+```
+
+### Ingress — внешний доступ
+
+Правило для Ingress Controller: весь трафик на `/` → сервис juiceshop:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            backend:
+              service:
+                name: juiceshop
+                port:
+                  number: 3000
+```
+
+### NetworkPolicy — сетевая изоляция
+
+Ограничивает с кем может общаться под:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+spec:
+  podSelector:
+    matchLabels:
+      app: juiceshop
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx  # только от Ingress
+  egress:
+    - ports:
+        - protocol: UDP
+          port: 53           # только DNS
+```
+
+---
+
+### Применение манифестов
+
+```bash
+# Применить все манифесты из папки
+kubectl apply -f manifests/hardened/
+
+# Применить один файл
+kubectl apply -f manifests/hardened/deployment.yaml
+
+# Проверить что задеплоилось
+kubectl get pods
+kubectl get deployments
+kubectl get services
+kubectl get ingress
+kubectl get networkpolicies
+
+# Подробная информация о поде
+kubectl describe pod ИМЯ_ПОДА
+
+# Логи приложения
+kubectl logs ИМЯ_ПОДА
+
+# Удалить всё что применили
+kubectl delete -f manifests/hardened/
+```
+
+### Типичные статусы подов
+
+| Статус | Что означает |
+|---|---|
+| `Running` | Под запущен и работает  |
+| `Pending` | Ждёт ресурсов или планировщика |
+| `CrashLoopBackOff` | Падает при запуске — смотри `kubectl logs` |
+| `ImagePullBackOff` | Не может скачать образ — проверь имя образа |
+| `Terminating` | Удаляется |
+
+---
 ## Развёртывание с нуля
 
 ### Требования
