@@ -1,4 +1,4 @@
-# 🔐 DevSecOps Kubernetes Stand
+#  DevSecOps Kubernetes Stand
 
 > **Построение DevSecOps-стенда: от уязвимой конфигурации к автоматизированной защите**
 
@@ -7,7 +7,7 @@
 
 ---
 
-## 📁 Структура репозитория
+##  Структура репозитория
 
 ```
 .
@@ -19,11 +19,11 @@
 │   └── meta.txt                # cloud-init: SSH ключ
 │
 ├── manifests/
-│   ├── vulnerable/             # ⚠️  Baseline — намеренно уязвимые
+│   ├── vulnerable/             # намеренно уязвимые
 │   │   ├── deployment.yaml     # privileged:true, runAsUser:0, нет лимитов
 │   │   └── secret.yaml         # пароли в base64 в репозитории
 │   │
-│   └── hardened/               # ✅  После hardening
+│   └── hardened/               # после hardening
 │       ├── deployment.yaml     # всё исправлено
 │       ├── secret.yaml         # без значений — создаётся через kubectl
 │       ├── service.yaml
@@ -34,13 +34,12 @@
 │   ├── architecture.md         # схема стенда
 │   ├── baseline-results.md     # результаты сканирования до
 │   └── hardening-results.md    # результаты после + что исправлено
-│
-└── screenshots/                # скриншоты для отчёта
+
 ```
 
 ---
 
-## 📐 Архитектура
+##  Архитектура
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -69,7 +68,7 @@
 
 ---
 
-## 🛠 Стек
+##  Стек
 
 | Категория | Инструмент |
 |---|---|
@@ -85,7 +84,7 @@
 
 ---
 
-## 📖 Теория
+## Теория
 
 ### Kubernetes
 
@@ -137,7 +136,7 @@ gitleaks нашёл секрет → exit code 1 → джоба FAILED → deplo
 
 ---
 
-## 🚀 Развёртывание с нуля
+## Развёртывание с нуля
 
 ### Требования
 
@@ -366,7 +365,7 @@ sudo gitlab-runner register \
 
 ### Шаг 8 — Создать секрет в кластере
 
-> ⚠️ Секреты НЕ хранятся в репозитории. Создаются напрямую в кластере.
+> Секреты НЕ хранятся в репозитории. Создаются напрямую в кластере.
 
 ```bash
 kubectl create secret generic juiceshop-secret \
@@ -422,31 +421,26 @@ kubectl get svc -n ingress-nginx
 
 ---
 
-## 🔒 Security Gate — логика pipeline
+##  Security Gate — логика pipeline
 
 ```
 push
- ├── semgrep    (allow_failure: false) → 🔴 блокирует при находках
- ├── gitleaks   (allow_failure: false) → 🔴 блокирует при секретах
- ├── trivy      (allow_failure: true)  → ℹ️  информационно
- ├── kubesec    (allow_failure: false) → 🔴 блокирует если score < 0
- ├── checkov    (allow_failure: true)  → ℹ️  информационно
+ ├── semgrep    (allow_failure: false) →  блокирует при находках
+ ├── gitleaks   (allow_failure: false) →  блокирует при секретах
+ ├── trivy      (allow_failure: true)  →  информационно
+ ├── kubesec    (allow_failure: false) →  блокирует если score < 0
+ ├── checkov    (allow_failure: true)  →  информационно
  └── deploy                            → запускается ТОЛЬКО если всё выше прошло
 ```
 
 ---
 
-## 🗺 Планы по развитию
+## Планы по развитию
 
 - **HashiCorp Vault** — управление секретами, ротация
 - **Sealed Secrets** — зашифрованные секреты в git
 - **RBAC** — минимальные права ServiceAccount
-- **Falco** — runtime мониторинг аномалий
 - **DefectDojo** — централизованное хранение находок из pipeline
 - **OPA Gatekeeper** — политики безопасности кластера
 
----
 
-## 👤 Автор
-
-Шамсутдинов Артемий — курс «Специалист по безопасной разработке приложений», CyberED 2026
