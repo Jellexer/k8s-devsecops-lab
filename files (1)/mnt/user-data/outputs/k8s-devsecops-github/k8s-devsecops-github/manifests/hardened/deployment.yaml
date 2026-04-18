@@ -1,0 +1,61 @@
+# ✅ HARDENED КОНФИГУРАЦИЯ
+#
+# Исправления по сравнению с vulnerable/:
+#   ✅ image:v15.0.0        — фиксированный тег
+#   ✅ runAsUser: 1000       — непривилегированный пользователь
+#   ✅ privileged: false     — нет доступа к хосту
+#   ✅ allowPrivilegeEscalation: false
+#   ✅ capabilities.drop: [ALL] — минимальные привилегии ядра
+#   ✅ resources.limits      — защита от DoS
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: juiceshop
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: juiceshop
+  template:
+    metadata:
+      labels:
+        app: juiceshop
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: juiceshop
+          image: bkimminich/juice-shop:v15.0.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: juiceshop-secret
+                  key: admin-password
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: juiceshop-secret
+                  key: jwt-secret
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # Juice Shop пишет временные файлы
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

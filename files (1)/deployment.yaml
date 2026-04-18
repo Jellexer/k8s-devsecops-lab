@@ -1,0 +1,47 @@
+# ⚠️  УЯЗВИМАЯ КОНФИГУРАЦИЯ — только для baseline демонстрации
+# Не использовать в production!
+#
+# Намеренные уязвимости:
+#   1. image:latest         — непредсказуемые обновления
+#   2. runAsUser: 0         — процесс от root
+#   3. privileged: true     — полный доступ к хосту (-30 очков kubesec)
+#   4. allowPrivilegeEscalation: true
+#   5. нет resources.limits — возможен DoS
+#   6. нет capabilities.drop
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: juiceshop
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: juiceshop
+  template:
+    metadata:
+      labels:
+        app: juiceshop
+    spec:
+      containers:
+        - name: juiceshop
+          image: bkimminich/juice-shop:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: juiceshop-secret
+                  key: admin-password
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: juiceshop-secret
+                  key: jwt-secret
+          securityContext:
+            runAsUser: 0
+            privileged: true
+            allowPrivilegeEscalation: true
+          resources: {}
