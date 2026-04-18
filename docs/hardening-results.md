@@ -4,12 +4,12 @@
 
 ## Сравнение
 
-| Инструмент | До | После | Изменение |
+| Инструмент | До | После |
 |---|---|---|---|
-| Kubesec score | **-37** | **+7** | +44 |
-| gitleaks секреты | 1 | 0 | ✅ |
-| Semgrep находки | 3 | 0 | ✅ |
-| Checkov failed | 22 | 13 | -41% |
+| Kubesec score | **-37** | **+7** |
+| gitleaks секреты | 1 | 0 |
+| Semgrep находки | 3 | 0 |
+| Checkov failed | 22 | 13 |
 
 ## Что исправлено
 
@@ -46,12 +46,12 @@ kubectl create secret generic juiceshop-secret \
 Score: +7
 
 Passed:
-  ✅ LimitsCPU       +1
-  ✅ LimitsMemory    +1
-  ✅ RequestsCPU     +1
-  ✅ RequestsMemory  +1
-  ✅ CapDropAny      +1
-  ✅ ReadOnlyRootFilesystem (частично)
+  LimitsCPU       +1
+  LimitsMemory    +1
+  RequestsCPU     +1
+  RequestsMemory  +1
+  CapDropAny      +1
+  ReadOnlyRootFilesystem (частично)
 ```
 
 ## Оставшиеся 13 Checkov failed
