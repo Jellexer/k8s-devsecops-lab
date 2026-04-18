@@ -4,20 +4,20 @@
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                  Yandex Cloud                        │
-│                                                      │
-│  ┌─────────────┐        ┌──────────────────────────┐│
-│  │  k8s-master │◄──────►│       k8s-worker         ││
-│  │ control plane│        │  Juice Shop Pod          ││
-│  │  4CPU / 8GB │        │  Ingress Controller      ││
-│  └─────────────┘        │  4CPU / 8GB              ││
-│                          └──────────────────────────┘│
-│                                                      │
-│  ┌─────────────┐                                     │
-│  │  git-runner │◄──────── gitlab.com                 │
-│  │ GitLab Runner│         CI/CD pipeline             │
-│  │ 2CPU / 4GB  │                                     │
-│  └─────────────┘                                     │
+│                  Yandex Cloud                       │
+│                                                     │
+│  ┌──────────────┐       ┌────────────────────────┐  │
+│  │  k8s-master  │◄─────►│      k8s-worker        │  │
+│  │ control plane│       │  Juice Shop Pod        │  │
+│  │  4CPU / 8GB  │       │  Ingress Controller    │  │ 
+│  └──────────────┘       │  4CPU / 8GB            │  │
+│                         └────────────────────────┘  │
+│                                                     │
+│  ┌───────────────┐                                  │
+│  │  git-runner   │◄──────── gitlab.com              │
+│  │ GitLab Runner │         CI/CD pipeline           │
+│  │ 2CPU / 4GB    │                                  │
+│  └───────────────┘                                  │
 └─────────────────────────────────────────────────────┘
 ```
 
