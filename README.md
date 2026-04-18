@@ -279,7 +279,7 @@ kubectl get svc -n ingress-nginx
 | Semgrep находки | 3 | 0 |
 | Checkov failed | 22 | 13 |
 
-Подробнее: [docs/baseline-results.md](docs/baseline-results.md) и [docs/hardening-results.md](docs/hardening-results.md)
+Подробнее: [Baseline results](docs/baseline-results.md) и [Hardening results](docs/hardening-results.md)
 
 ---
 
