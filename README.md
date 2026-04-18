@@ -69,6 +69,7 @@
 ### Шаг 1 — Настройка Terraform для Yandex Cloud
 
 установить и настроить [yc](https://yandex.cloud/ru/docs/cli/quickstart?utm_referrer=https%3A%2F%2Fgithub.com%2Fbykvaadm%2FCyberEd%2Ftree%2Fmaster%2F1&utm_referrer=https%3A%2F%2Fyandex.cloud%2Fshowcaptchafast%3Fd%3DD401AB14AE73A7FB436A6A7E196D47385A5F1081D374DE656C5F7A704880DF4BD27113A107F764C2F125E467A8C9A0FD17FED58C6A%26retpath%3DaHR0cHM6Ly95YW5kZXguY2xvdWQvcnUvZG9jcy9jbGkvcXVpY2tzdGFydD8mdXRtX3JlZmVycmVyPWh0dHBzJTNBLy9naXRodWIuY29tL2J5a3ZhYWRtL0N5YmVyRWQvdHJlZS9tYXN0ZXIvMQ%252C%252C_fd6a08ca9f4bf46f83a693726e335ad3%26s%3D97754b636669aeb2b056331b07d1c29b)
+
 установить и настроить [terraform](https://yandex.cloud/ru/docs/cli/quickstart?utm_referrer=https%3A%2F%2Fgithub.com%2Fbykvaadm%2FCyberEd%2Ftree%2Fmaster%2F1&utm_referrer=https%3A%2F%2Fyandex.cloud%2Fshowcaptchafast%3Fd%3DD401AB14AE73A7FB436A6A7E196D47385A5F1081D374DE656C5F7A704880DF4BD27113A107F764C2F125E467A8C9A0FD17FED58C6A%26retpath%3DaHR0cHM6Ly95YW5kZXguY2xvdWQvcnUvZG9jcy9jbGkvcXVpY2tzdGFydD8mdXRtX3JlZmVycmVyPWh0dHBzJTNBLy9naXRodWIuY29tL2J5a3ZhYWRtL0N5YmVyRWQvdHJlZS9tYXN0ZXIvMQ%252C%252C_fd6a08ca9f4bf46f83a693726e335ad3%26s%3D97754b636669aeb2b056331b07d1c29b)
 
 ---
@@ -77,10 +78,6 @@
 
 Подставь свой публичный SSH ключ в `terraform/meta.txt`:
 
-```bash
-cat ~/.ssh/id_rsa.pub
-# скопируй вывод в meta.txt вместо ВСТАВЬ_СВОЙ_ПУБЛИЧНЫЙ_КЛЮЧ_СЮДА
-```
 
 ```bash
 cd terraform/
@@ -147,7 +144,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 # Flannel — сетевой плагин
 kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 
-# Команда для подключения worker (скопируй!)
+# Команда для подключения worker (скопируй, необходима для подключения воркера в кластер)
 kubeadm token create --print-join-command
 ```
 
@@ -209,32 +206,6 @@ sudo usermod -aG docker debian && newgrp docker
 curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh | sudo bash
 sudo apt-get install -y gitlab-runner
 sudo usermod -aG docker gitlab-runner
-
-# Trivy
-wget -qO- https://aquasecurity.github.io/trivy-repo/deb/public.key | \
-  sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
-echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | \
-  sudo tee /etc/apt/sources.list.d/trivy.list
-sudo apt-get update && sudo apt-get install -y trivy
-
-# Kubesec
-wget -q https://github.com/controlplaneio/kubesec/releases/download/v2.13.0/kubesec_linux_amd64.tar.gz \
-  -O /tmp/kubesec.tar.gz
-tar -xzf /tmp/kubesec.tar.gz -C /tmp && sudo mv /tmp/kubesec /usr/local/bin/
-
-# Checkov + Semgrep
-sudo apt-get install -y python3-pip
-pip3 install checkov semgrep --break-system-packages
-echo 'export PATH=$PATH:~/.local/bin' >> ~/.bashrc && source ~/.bashrc
-
-# gitleaks
-wget -q https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz \
-  -O /tmp/gitleaks.tar.gz
-tar -xzf /tmp/gitleaks.tar.gz -C /tmp && sudo mv /tmp/gitleaks /usr/local/bin/
-
-# Проверить
-trivy --version && kubesec version && checkov --version && semgrep --version && gitleaks version
-```
 
 Зарегистрировать GitLab Runner:
 
@@ -299,7 +270,7 @@ kubectl get svc -n ingress-nginx
 
 ---
 
-## 📊 Результаты
+##  Результаты
 
 | Инструмент | До (vulnerable/) | После (hardened/) |
 |---|---|---|
