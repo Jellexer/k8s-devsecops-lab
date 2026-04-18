@@ -68,36 +68,8 @@
 
 ### Шаг 1 — Настройка Terraform для Yandex Cloud
 
-Настрой зеркало (официальный реестр HashiCorp недоступен в России):
-
-```bash
-cat > ~/.terraformrc << 'EOF'
-provider_installation {
-  network_mirror {
-    url     = "https://terraform-mirror.yandexcloud.net/"
-    include = ["registry.terraform.io/*/*"]
-  }
-  direct {
-    exclude = ["registry.terraform.io/*/*"]
-  }
-}
-EOF
-```
-
-Установи Yandex Cloud CLI и авторизуйся:
-
-```bash
-curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-yc init
-```
-
-Экспортируй переменные:
-
-```bash
-export YC_TOKEN=$(yc iam create-token)
-export YC_CLOUD_ID=your_cloud_id    # yc config list
-export YC_FOLDER_ID=your_folder_id
-```
+установить и настроить [yc](https://yandex.cloud/ru/docs/cli/quickstart?utm_referrer=https%3A%2F%2Fgithub.com%2Fbykvaadm%2FCyberEd%2Ftree%2Fmaster%2F1&utm_referrer=https%3A%2F%2Fyandex.cloud%2Fshowcaptchafast%3Fd%3DD401AB14AE73A7FB436A6A7E196D47385A5F1081D374DE656C5F7A704880DF4BD27113A107F764C2F125E467A8C9A0FD17FED58C6A%26retpath%3DaHR0cHM6Ly95YW5kZXguY2xvdWQvcnUvZG9jcy9jbGkvcXVpY2tzdGFydD8mdXRtX3JlZmVycmVyPWh0dHBzJTNBLy9naXRodWIuY29tL2J5a3ZhYWRtL0N5YmVyRWQvdHJlZS9tYXN0ZXIvMQ%252C%252C_fd6a08ca9f4bf46f83a693726e335ad3%26s%3D97754b636669aeb2b056331b07d1c29b)
+установить и настроить [terraform](https://yandex.cloud/ru/docs/cli/quickstart?utm_referrer=https%3A%2F%2Fgithub.com%2Fbykvaadm%2FCyberEd%2Ftree%2Fmaster%2F1&utm_referrer=https%3A%2F%2Fyandex.cloud%2Fshowcaptchafast%3Fd%3DD401AB14AE73A7FB436A6A7E196D47385A5F1081D374DE656C5F7A704880DF4BD27113A107F764C2F125E467A8C9A0FD17FED58C6A%26retpath%3DaHR0cHM6Ly95YW5kZXguY2xvdWQvcnUvZG9jcy9jbGkvcXVpY2tzdGFydD8mdXRtX3JlZmVycmVyPWh0dHBzJTNBLy9naXRodWIuY29tL2J5a3ZhYWRtL0N5YmVyRWQvdHJlZS9tYXN0ZXIvMQ%252C%252C_fd6a08ca9f4bf46f83a693726e335ad3%26s%3D97754b636669aeb2b056331b07d1c29b)
 
 ---
 
