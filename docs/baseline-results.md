@@ -8,15 +8,15 @@
 Score: -37
 
 Критические проблемы:
-  🔴 privileged == true           — -30 очков
-  🔴 allowPrivilegeEscalation == true — -7 очков
+  privileged == true           — -30 очков
+  allowPrivilegeEscalation == true — -7 очков
 
 Предупреждения (чего не хватает):
-  🟡 resources.limits.cpu
-  🟡 resources.limits.memory
-  🟡 securityContext.runAsNonRoot
-  🟡 securityContext.readOnlyRootFilesystem
-  🟡 capabilities.drop
+  resources.limits.cpu
+  resources.limits.memory
+  securityContext.runAsNonRoot
+  securityContext.readOnlyRootFilesystem
+  сapabilities.drop
 ```
 
 ## gitleaks
@@ -36,14 +36,14 @@ RuleID:   generic-api-key
 ```
 3 Code Findings в manifests/deployment.yaml
 
-  🔴 yaml.kubernetes.security.privileged-container
-     privileged: true — контейнер получает привилегии root на хосте
+  yaml.kubernetes.security.privileged-container
+   privileged: true — контейнер получает привилегии root на хосте
 
-  🔴 yaml.kubernetes.security.allow-privilege-escalation-true
-     allowPrivilegeEscalation: true
+  yaml.kubernetes.security.allow-privilege-escalation-true
+    allowPrivilegeEscalation: true
 
-  🔴 yaml.kubernetes.security.run-as-non-root
-     runAsNonRoot не задан — контейнер может запуститься от root
+  yaml.kubernetes.security.run-as-non-root
+   runAsNonRoot не задан — контейнер может запуститься от root
 ```
 
 ## Checkov
