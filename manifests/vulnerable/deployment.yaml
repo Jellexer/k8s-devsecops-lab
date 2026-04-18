@@ -1,14 +1,3 @@
-# ⚠️  УЯЗВИМАЯ КОНФИГУРАЦИЯ — только для baseline демонстрации
-# Не использовать в production!
-#
-# Намеренные уязвимости:
-#   1. image:latest         — непредсказуемые обновления
-#   2. runAsUser: 0         — процесс от root
-#   3. privileged: true     — полный доступ к хосту (-30 очков kubesec)
-#   4. allowPrivilegeEscalation: true
-#   5. нет resources.limits — возможен DoS
-#   6. нет capabilities.drop
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
