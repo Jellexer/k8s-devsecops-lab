@@ -1,20 +1,41 @@
-$user   = "DOMAIN\ivanov"
-$script = "C:\Windows\Temp\install_python.ps1"
+$account = "cplsb\aeshamsutdinov"
+$ver     = "3.12.7"
+$exe     = "C:\Windows\Temp\python-$ver-amd64.exe"   # не $env:TEMP: у SYSTEM он свой
 
-@'
-$ver = "3.12.7"
-$exe = "$env:TEMP\python-$ver-amd64.exe"
-Invoke-WebRequest "https://www.python.org/ftp/python/$ver/python-$ver-amd64.exe" -OutFile $exe -UseBasicParsing
-Start-Process $exe -Wait -ArgumentList "/quiet InstallAllUsers=0 PrependPath=1 Include_launcher=0"
-'@ | Set-Content $script -Encoding UTF8
+# 1. SID и профиль пользователя
+$sid  = ([System.Security.Principal.NTAccount]$account).Translate([System.Security.Principal.SecurityIdentifier]).Value
+$prof = Get-CimInstance Win32_UserProfile | Where-Object { $_.SID -eq $sid }
+if (-not $prof) { throw "Профиль для $sid не найден (пользователь ещё не входил на эту машину?)" }
 
-$action    = New-ScheduledTaskAction -Execute "powershell.exe" `
-             -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$script`""
-$principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
-Register-ScheduledTask -TaskName "InstallPythonOnce" -Action $action -Principal $principal -Force
-Start-ScheduledTask -TaskName "InstallPythonOnce"
+$target = Join-Path $prof.LocalPath "AppData\Local\Programs\Python\Python312"
 
-# дождаться и убрать за собой
-do { Start-Sleep 5 } while ((Get-ScheduledTask "InstallPythonOnce").State -eq "Running")
-Unregister-ScheduledTask "InstallPythonOnce" -Confirm:$false
-Remove-Item $script
+# 2. Скачать установщик (если ещё нет)
+if (-not (Test-Path $exe)) {
+    Invoke-WebRequest "https://www.python.org/ftp/python/$ver/python-$ver-amd64.exe" -OutFile $exe -UseBasicParsing
+}
+
+# 3. Тихая установка в профиль пользователя
+$p = Start-Process $exe -Wait -PassThru -ArgumentList @(
+    "/quiet", "InstallAllUsers=0", "TargetDir=`"$target`"",
+    "PrependPath=0", "Include_launcher=0", "Include_test=0"
+)
+"ExitCode: $($p.ExitCode)"
+
+# 4. Права пользователю на каталог
+icacls $target /grant "*${sid}:(OI)(CI)M" /T | Out-Null
+
+# 5. PATH в среду пользователя (HKU\<SID>\Environment)
+$hiveLoaded = Test-Path "Registry::HKEY_USERS\$sid"
+if (-not $hiveLoaded) { reg load "HKU\$sid" "$($prof.LocalPath)\NTUSER.DAT" | Out-Null }
+
+$key  = "Registry::HKEY_USERS\$sid\Environment"
+$cur  = (Get-ItemProperty $key -Name Path -ErrorAction SilentlyContinue).Path
+if ($cur -notlike "*$target*") {
+    $new = "$target;$target\Scripts" + $(if ($cur) { ";$cur" })
+    Set-ItemProperty $key -Name Path -Value $new -Type ExpandString
+}
+
+if (-not $hiveLoaded) { [gc]::Collect(); Start-Sleep 1; reg unload "HKU\$sid" | Out-Null }
+
+# 6. Проверка
+& "$target\python.exe" --version
