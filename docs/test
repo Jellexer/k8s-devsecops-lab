@@ -1,14 +1,7 @@
-# учёт SYSTEM и all-users
-Get-ItemProperty "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
-                 "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
-                 "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*" -ErrorAction SilentlyContinue |
-  Where-Object DisplayName -like "Python*" |
-  Select DisplayName, DisplayVersion, InstallLocation, UninstallString
-
-# физические каталоги
-Test-Path "C:\Program Files\Python312"
-Test-Path "C:\Windows\System32\config\systemprofile\AppData\Local\Programs\Python"
-
-
-$exe = "C:\Windows\Temp\python-3.12.7-amd64.exe"
-Start-Process $exe -Wait -ArgumentList "/uninstall /quiet /log C:\Windows\Temp\py_uninstall.log"
+$p = Start-Process $exe -Wait -PassThru -ArgumentList @(
+  "/quiet","InstallAllUsers=0","TargetDir=`"$target`"",
+  "PrependPath=0","Include_launcher=0","Include_test=0",
+  "/log","C:\Windows\Temp\py_install.log"
+)
+$p.ExitCode
+Test-Path "$target\python.exe"
