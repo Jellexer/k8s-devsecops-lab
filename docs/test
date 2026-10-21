@@ -8,3 +8,7 @@ Get-ItemProperty "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
 # физические каталоги
 Test-Path "C:\Program Files\Python312"
 Test-Path "C:\Windows\System32\config\systemprofile\AppData\Local\Programs\Python"
+
+
+$exe = "C:\Windows\Temp\python-3.12.7-amd64.exe"
+Start-Process $exe -Wait -ArgumentList "/uninstall /quiet /log C:\Windows\Temp\py_uninstall.log"
