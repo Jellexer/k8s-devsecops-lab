@@ -1,0 +1,20 @@
+$user   = "DOMAIN\ivanov"
+$script = "C:\Windows\Temp\install_python.ps1"
+
+@'
+$ver = "3.12.7"
+$exe = "$env:TEMP\python-$ver-amd64.exe"
+Invoke-WebRequest "https://www.python.org/ftp/python/$ver/python-$ver-amd64.exe" -OutFile $exe -UseBasicParsing
+Start-Process $exe -Wait -ArgumentList "/quiet InstallAllUsers=0 PrependPath=1 Include_launcher=0"
+'@ | Set-Content $script -Encoding UTF8
+
+$action    = New-ScheduledTaskAction -Execute "powershell.exe" `
+             -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$script`""
+$principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
+Register-ScheduledTask -TaskName "InstallPythonOnce" -Action $action -Principal $principal -Force
+Start-ScheduledTask -TaskName "InstallPythonOnce"
+
+# дождаться и убрать за собой
+do { Start-Sleep 5 } while ((Get-ScheduledTask "InstallPythonOnce").State -eq "Running")
+Unregister-ScheduledTask "InstallPythonOnce" -Confirm:$false
+Remove-Item $script
