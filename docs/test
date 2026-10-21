@@ -1,6 +1,7 @@
-$p = Start-Process $exe -Wait -PassThru -ArgumentList "/quiet InstallAllUsers=0 TargetDir=`"$target`" Shortcuts=0 AssociateFiles=0 PrependPath=0 Include_launcher=0 Include_test=0 /log C:\Windows\Temp\py_install.log"
+$p = Start-Process $exe -Wait -PassThru -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1 Include_launcher=1 Include_test=0 /log C:\Windows\Temp\py_install_all.log"
 $p.ExitCode
-Select-String C:\Windows\Temp\py_install*.log -Pattern 'Error 0x' | Select -Last 8 | % Line
+Test-Path "C:\Program Files\Python312\python.exe"
+
 
 pfg
 
