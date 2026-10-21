@@ -1,6 +1,18 @@
+#!/usr/bin/env bash
 read -rsp "sudo password: " PW; echo
-while read -r h; do
-  echo "=== $h ==="
-  ssh -o StrictHostKeyChecking=accept-new shared_user@"$h" \
-    "echo '$PW' | sudo -S -p '' dnf -y update rhc && rpm -q rhc" 2>&1
-done < hosts.txt
+OUT=rhc_update_$(date +%F_%H%M).log
+
+while read -r h <&3; do
+  [[ -z "$h" || "$h" == \#* ]] && continue
+  echo "=== $h ===" | tee -a "$OUT"
+  printf '%s\n' "$PW" | ssh -o ConnectTimeout=10 shared_user@"$h" '
+    before=$(rpm -q rhc)
+    sudo -S -p "" dnf -y update rhc
+    rc=$?
+    echo "RESULT rc=$rc before=$before after=$(rpm -q rhc)"
+  ' 2>&1 | tee -a "$OUT"
+done 3< hosts.txt
+
+unset PW
+echo; echo "--- Итог ---"
+grep -E '^(===|RESULT)' "$OUT"
