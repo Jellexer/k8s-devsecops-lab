@@ -1,18 +1,26 @@
-#!/usr/bin/env bash
-read -rsp "sudo password: " PW; echo
-OUT=rhc_update_$(date +%F_%H%M).log
+$user  = 'shared_user'
+$hosts = Get-Content .\hosts.txt | ForEach-Object { $_.Trim() } |
+         Where-Object { $_ -and $_ -notmatch '^#' }
 
-while read -r h <&3; do
-  [[ -z "$h" || "$h" == \#* ]] && continue
-  echo "=== $h ===" | tee -a "$OUT"
-  printf '%s\n' "$PW" | ssh -o ConnectTimeout=10 shared_user@"$h" '
-    before=$(rpm -q rhc)
-    sudo -S -p "" dnf -y update rhc
-    rc=$?
-    echo "RESULT rc=$rc before=$before after=$(rpm -q rhc)"
-  ' 2>&1 | tee -a "$OUT"
-done 3< hosts.txt
+$sec = Read-Host 'sudo password' -AsSecureString
+$PW  = [System.Net.NetworkCredential]::new('', $sec).Password
 
-unset PW
-echo; echo "--- Итог ---"
-grep -E '^(===|RESULT)' "$OUT"
+# tr -d '\r' нужен, потому что PowerShell добавляет к паролю CRLF
+$remote = (@'
+before=$(rpm -q rhc)
+tr -d '\r' | sudo -S -p '' dnf -y update rhc
+rc=$?
+echo RESULT rc=$rc before=$before after=$(rpm -q rhc)
+'@ -split "\r?\n" | Where-Object { $_ }) -join '; '
+
+$log = "rhc_update_$(Get-Date -Format 'yyyy-MM-dd_HHmm').log"
+
+foreach ($h in $hosts) {
+    "=== $h ===" | Tee-Object -Append -FilePath $log
+    $PW | ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new "$user@$h" $remote 2>&1 |
+        ForEach-Object { "$_" } | Tee-Object -Append -FilePath $log
+}
+$PW = $null
+
+"`n--- Итог ---"
+Select-String -Path $log -Pattern '^===|^RESULT' | ForEach-Object Line
