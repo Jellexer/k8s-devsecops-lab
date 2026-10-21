@@ -1,3 +1,28 @@
+$p = Start-Process $exe -Wait -PassThru -ArgumentList "/quiet InstallAllUsers=0 TargetDir=`"$target`" Shortcuts=0 AssociateFiles=0 PrependPath=0 Include_launcher=0 Include_test=0 /log C:\Windows\Temp\py_install.log"
+$p.ExitCode
+Select-String C:\Windows\Temp\py_install*.log -Pattern 'Error 0x' | Select -Last 8 | % Line
+
+pfg
+
+$u    = "cplsb\aeshamsutdinov"
+$exe2 = "C:\Users\aeshamsutdinov\AppData\Local\Temp\python-3.12.10-amd64.exe"
+Copy-Item $exe $exe2 -Force
+
+$act = New-ScheduledTaskAction -Execute $exe2 -Argument "/quiet InstallAllUsers=0 PrependPath=1 Include_launcher=0 Include_test=0"
+$pri = New-ScheduledTaskPrincipal -UserId $u -LogonType Interactive -RunLevel Limited
+Register-ScheduledTask PyUserInstall -Action $act -Principal $pri -Force | Out-Null
+Start-ScheduledTask PyUserInstall
+
+Start-Sleep 5; while ((Get-ScheduledTask PyUserInstall).State -eq 'Running') { Start-Sleep 3 }
+(Get-ScheduledTaskInfo PyUserInstall).LastTaskResult   # 0 = успех
+Unregister-ScheduledTask PyUserInstall -Confirm:$false
+
+
+
+
+sadas
+
+
 $ver = "3.12.10"
 $exe = "C:\Windows\Temp\python-$ver-amd64.exe"
 Invoke-WebRequest "https://www.python.org/ftp/python/$ver/python-$ver-amd64.exe" -OutFile $exe -UseBasicParsing
