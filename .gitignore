@@ -1,0 +1,21 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+
+# Secrets — никогда не коммитить
+*.key
+*.pem
+kubeconfig
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Screenshots placeholder
+screenshots/*.png
+screenshots/*.jpg
+!screenshots/.gitkeep

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: juiceshop
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: juiceshop
+  template:
+    metadata:
+      labels:
+        app: juiceshop
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: juiceshop
+          image: bkimminich/juice-shop:v15.0.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: juiceshop-secret
+                  key: admin-password
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: juiceshop-secret
+                  key: jwt-secret
+          securityContext:
+            runAsNonRoot: true
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # juice-shop требует запись
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
