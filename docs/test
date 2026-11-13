@@ -1,1 +1,8 @@
+Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*','HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object { $_.DisplayName -like '*pgAdmin*' -or $_.DisplayName -like '*PostgreSQL*' } | Select-Object DisplayName, DisplayVersion, InstallLocation, PSChildName
+Установки «только для меня» в профилях пользователей. Видны только профили, которые сейчас загружены; по PSParentPath (там SID) понятно, чей это профиль:
 
+Get-ItemProperty 'Registry::HKEY_USERS\*\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue | Where-Object DisplayName -like '*pgAdmin*' | Select-Object DisplayName, DisplayVersion, InstallLocation, PSParentPath
+Папки на диске: общие каталоги программ, вложенная папка PostgreSQL и пользовательские установки всех профилей (это заодно закрывает незагруженные профили):
+
+Get-ChildItem 'C:\Program Files','C:\Program Files (x86)','C:\Users\*\AppData\Local\Programs' -Recurse -Depth 2 -Directory -Filter '*pgAdmin*' -ErrorAction SilentlyContinue | Select-Object FullName, LastWriteTime
+Шаг 3. Что делать с результатом
