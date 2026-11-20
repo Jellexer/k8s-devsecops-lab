@@ -6,3 +6,13 @@ select(@Host, Host.Vulners.CVEs)
 select(@Host, Host.FQDN, Host.OsName, Host.Vulners.CVEs)
 | filter(Host.Vulners.CVSS.BaseScore >= 7)
 | group(@Host, Host.FQDN, Host.OsName, Host.Vulners.CVEs)
+
+select(@Host, Host.OsName, Host.IpAddress, Host.@AuditTime, Host.@Vulners,
+       Host.@Vulners.CVEs as CVEs,
+       Host.@Vulners.Status as Status,
+       Host.@Vulners.CVSS3BaseScore as CVSS3Base,
+       Host.@Vulners.SeverityRating as Severity)
+| filter(Severity in ["High"] and Status in ["new","inProgress","awaitingFix","overdue","stale"])
+| select(@Host, Host.OsName, Host.IpAddress, CVEs, CVSS3Base, Severity, Host.@AuditTime)
+| unique()
+| limit(0)
