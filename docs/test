@@ -1,1 +1,8 @@
-ыфв
+select(@Host, Host.Vulners.CVEs)
+| filter(Host.Vulners.CVSS.BaseScore >= 7)
+| group(@Host, Host.Vulners.CVEs)
+| sort(Host.Vulners.CVEs)
+
+select(@Host, Host.FQDN, Host.OsName, Host.Vulners.CVEs)
+| filter(Host.Vulners.CVSS.BaseScore >= 7)
+| group(@Host, Host.FQDN, Host.OsName, Host.Vulners.CVEs)
