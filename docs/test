@@ -1,18 +1,4 @@
-select(@Host, Host.Vulners.CVEs)
-| filter(Host.Vulners.CVSS.BaseScore >= 7)
-| group(@Host, Host.Vulners.CVEs)
-| sort(Host.Vulners.CVEs)
+sudo find /var/log \( -type f -o -type l \) \( -iname '*access*' -o -iname '*haproxy*' -o -ipath '*/grafana/*audit*' \) -print
 
-select(@Host, Host.FQDN, Host.OsName, Host.Vulners.CVEs)
-| filter(Host.Vulners.CVSS.BaseScore >= 7)
-| group(@Host, Host.FQDN, Host.OsName, Host.Vulners.CVEs)
-
-select(@Host, Host.OsName, Host.IpAddress, Host.@AuditTime, Host.@Vulners,
-       Host.@Vulners.CVEs as CVEs,
-       Host.@Vulners.Status as Status,
-       Host.@Vulners.CVSS3BaseScore as CVSS3Base,
-       Host.@Vulners.SeverityRating as Severity)
-| filter(Severity in ["High"] and Status in ["new","inProgress","awaitingFix","overdue","stale"])
-| select(@Host, Host.OsName, Host.IpAddress, CVEs, CVSS3Base, Severity, Host.@AuditTime)
-| unique()
-| limit(0)
+sudo find /var/log/nginx -type f -iname '*access*' -exec zgrep -lF '23/Nov/2026:' {} +
+sudo nginx -T 2>&1 | grep -E '^[[:space:]]*(server_name|access_log)[[:space:]]'
